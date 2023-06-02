@@ -5,33 +5,28 @@ import cityBloxx.enums.BuildingType;
 import cityBloxx.obj.Case;
 import cityBloxx.obj.CityBloxx;
 import cityBloxx.obj.ThreadInfo;
-import org.apache.lucene.util.RamUsageEstimator;
-import sun.misc.URLClassPath;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.lucene.util.RamUsageEstimator.ONE_GB;
+import static cityBloxx.test.DoAllBuildMethod.countByCaseId;
 
 /**
  * 穷举法
  * 暂定失败，本机算力要好几年
  * @author zkk
  */
-public class DoAllBuildMethod {
+public class DoAll3x3BuildMethod {
 
     /**
      * 本次执行要开辟的线程数
@@ -41,7 +36,7 @@ public class DoAllBuildMethod {
     public static long maxCaseCount;
 
     static {
-        maxCaseCount = new BigDecimal(4).pow(25).longValue();
+        maxCaseCount = new BigDecimal(4).pow(9).longValue();
     }
 
     private static final Map<String, Date> PART_MAP = new HashMap<>();
@@ -83,11 +78,8 @@ public class DoAllBuildMethod {
                 threadInfo.setEndId(partStart + partSize);
                 for (long i = 0; i < partSize; i++) {
                     long id = partStart + i;
-                    int count = countByCaseId(id);
-                    if (count < highestFloorCount[0]) {
-                        continue;
-                    }
                     CityBloxx cityBloxx = buildByCaseId2(id);
+                    int count = countByCaseId(id);
                     if (cityBloxx.checkLegality2()) {
                         if (count >= highestFloorCount[0] ) {
                             cityBloxx.count(count);
@@ -175,19 +167,6 @@ public class DoAllBuildMethod {
             }
         }
         return lawfulWaySize;
-    }
-
-    public static int countByCaseId(long i) {
-        int count = 0;
-        long lastPosNum = 0L;
-
-        for (int r = Long.SIZE - 2; r >= 0; r -= 2) {
-            i = i - (lastPosNum << (r + 2));
-            long currNum = i >>> r;
-            count += currNum + 1;
-            lastPosNum = currNum;
-        }
-        return (count - 7) * 10;
     }
 
     private static CityBloxx buildByCaseId(List<BuildingType> buildingTypes, long i) {
